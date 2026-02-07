@@ -1,32 +1,35 @@
 package env
 
 import (
-	"embed"
 	"encoding/json"
+	"fmt"
 	"os"
 	"path"
 	"runtime"
 	"strings"
 
-	"github.com/s-hammon/msgraph/auth"
+	"github.com/alamo-ds/msgraph/auth"
 	"github.com/s-hammon/p"
 )
 
 var (
-	homeDir        = os.Getenv("GRAPH_HOME_DIR")
-	homeDirDotFile = ""
+	homeDir           = os.Getenv("GRAPH_HOME_DIR")
+	homeDirConfigFile = ""
+	homeDirCacheFile  = ""
 )
 
-//go:embed *
-var envFolder embed.FS
-
 func init() {
-	homeDir = SetHomeDir("ms-graph")
-	homeDirDotFile = GetDotFilePath(homeDir)
+	homeDir = SetHomeDir("msgraph")
+	os.MkdirAll(homeDir, 0750)
 
-	os.MkdirAll(homeDir, 0755)
-	if homeDir != "" && !pathExists(homeDirDotFile) {
-		WriteDotFile(auth.AzureADConfig{})
+	homeDirConfigFile = GetConfigPath(homeDir)
+	if homeDir != "" && !pathExists(homeDirConfigFile) {
+		WriteConfigFile(auth.AzureADConfig{})
+	}
+
+	homeDirCacheFile = GetCachePath(homeDir)
+	if homeDir != "" && !pathExists(homeDirCacheFile) {
+		WriteCacheFile("", make(map[string]string))
 	}
 }
 
@@ -34,38 +37,38 @@ func SetHomeDir(name string) string {
 	envKey := strings.ToUpper(strings.ReplaceAll(name, "-", "_")) + "_HOME_DIR"
 	dir := os.Getenv(envKey)
 	if dir == "" {
-		dir = path.Join(getHomeDir(), "."+name)
+		dir = path.Join(GetHomeDir(), "."+name)
 		os.Setenv(envKey, dir)
 	}
 
 	return dir
 }
 
-func GetDotFilePath(dir string) string {
+func GetConfigPath(dir string) string {
 	return path.Join(dir, "config.json")
 }
 
-func LoadDotFile() auth.AzureADConfig {
-	data, _ := os.ReadFile(homeDirDotFile)
+func LoadConfigFile() auth.AzureADConfig {
+	data, _ := os.ReadFile(homeDirConfigFile)
 
 	var cfg auth.AzureADConfig
 	json.Unmarshal(data, &cfg)
 	return cfg
 }
 
-func WriteDotFile(cfg auth.AzureADConfig) {
+func WriteConfigFile(cfg auth.AzureADConfig) {
 	if cfg.Scopes == nil {
 		cfg.Scopes = make([]string, 0)
 	}
 
 	data, _ := json.MarshalIndent(cfg, "", "  ")
-	if err := os.WriteFile(homeDirDotFile, data, 0644); err != nil {
-		msg := p.Format("couldn't write to %s: %v", homeDirDotFile, err)
+	if err := os.WriteFile(homeDirConfigFile, data, 0600); err != nil {
+		msg := p.Format("couldn't write to %s: %v", homeDirConfigFile, err)
 		panic(msg)
 	}
 }
 
-func getHomeDir() string {
+func GetHomeDir() string {
 	home := os.Getenv("HOME")
 	switch runtime.GOOS {
 	case "windows":
@@ -75,6 +78,16 @@ func getHomeDir() string {
 	}
 
 	return home
+}
+
+func SafeOpen(path string) (*os.File, error) {
+	root, err := os.OpenRoot(GetHomeDir())
+	if err != nil {
+		return nil, fmt.Errorf("os.OpenRoot(home): %v", err)
+	}
+	defer root.Close()
+
+	return root.Open(path)
 }
 
 func pathExists(filepath string) bool {

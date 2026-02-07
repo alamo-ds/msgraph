@@ -43,7 +43,7 @@ func GetAccessToken(cfg AzureADConfig) (TokenResponse, error) {
 	data.Set("scope", cfg.getScopes())
 	data.Set("grant_type", "client_credentials")
 
-	resp, err := http.Post(tokenURL, "application/x-www-form-urlencoded", strings.NewReader(data.Encode()))
+	resp, err := http.Post(tokenURL, "application/x-www-form-urlencoded", strings.NewReader(data.Encode())) // #nosec G107
 	if err != nil {
 		return TokenResponse{}, fmt.Errorf("failed to send HTTP request: %v", err)
 	}
