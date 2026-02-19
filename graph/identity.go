@@ -1,7 +1,7 @@
 package graph
 
 type Identity struct {
-	DisplayName any    `json:"displayName"`
+	DisplayName string `json:"displayName"`
 	ID          string `json:"id"`
 }
 
