@@ -258,7 +258,7 @@ func (r *PlanRequestBuilder) Patch(ctx context.Context, params PatchPlanParams) 
 		return ret, makeReqErr(err)
 	}
 
-	if err := handlePatchPostResp(resp, ret); err != nil {
+	if err := handlePatchPostResp(resp, &ret); err != nil {
 		return ret, err
 	}
 

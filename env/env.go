@@ -1,14 +1,12 @@
 package env
 
 import (
-	"encoding/json"
 	"fmt"
 	"os"
 	"path"
 	"runtime"
 	"strings"
 
-	"github.com/alamo-ds/msgraph/auth"
 	"github.com/s-hammon/p"
 )
 
@@ -24,7 +22,7 @@ func init() {
 
 	homeDirConfigFile = GetConfigPath(homeDir)
 	if homeDir != "" && !pathExists(homeDirConfigFile) {
-		WriteConfigFile(auth.AzureADConfig{})
+		WriteConfigFile([]byte("{}"))
 	}
 
 	homeDirCacheFile = GetCachePath(homeDir)
@@ -48,20 +46,12 @@ func GetConfigPath(dir string) string {
 	return path.Join(dir, "config.json")
 }
 
-func LoadConfigFile() auth.AzureADConfig {
+func LoadConfigFile() []byte {
 	data, _ := os.ReadFile(homeDirConfigFile)
-
-	var cfg auth.AzureADConfig
-	json.Unmarshal(data, &cfg)
-	return cfg
+	return data
 }
 
-func WriteConfigFile(cfg auth.AzureADConfig) {
-	if cfg.Scopes == nil {
-		cfg.Scopes = make([]string, 0)
-	}
-
-	data, _ := json.MarshalIndent(cfg, "", "  ")
+func WriteConfigFile(data []byte) {
 	if err := os.WriteFile(homeDirConfigFile, data, 0600); err != nil {
 		msg := p.Format("couldn't write to %s: %v", homeDirConfigFile, err)
 		panic(msg)

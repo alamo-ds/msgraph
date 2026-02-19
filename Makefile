@@ -10,7 +10,6 @@ test:
 	@go test -cover ./...
 
 clean:
-	@rm -rf bin
 	@go mod tidy
 
 gosec:
@@ -20,9 +19,5 @@ lint:
 	@golangci-lint run --disable=errcheck --timeout=2m
 
 ready: test lint gosec
-
-test-packages:
-	go test -json $$(go list ./... | grep -v -e /bin -e /cmd -e /internal/api/models) |\
-		tparse --follow -sort=elapsed -trimpath=auto -all
 
 .PHONY: clean test build gosec lint ready

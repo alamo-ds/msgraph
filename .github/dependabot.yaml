@@ -1,0 +1,25 @@
+version: 2
+
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: saturday
+    assignees:
+      - shammon
+
+  - package-ecosystem: gomod
+    directory: /
+    schedule:
+      interval: weekly
+      day: saturday
+    groups:
+      gomod:
+        patterns:
+          - "*"
+    assignees:
+      - shammon
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-patch"]

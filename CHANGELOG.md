@@ -1,0 +1,16 @@
+# Changelog
+
+All notable changes to this project will be documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project
+adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## Unreleased
+
+- OAuth2 no uses the golang.org/x/oauth2/clientcredentials scheme
+- Added rate limiting w/ defailts
+- Added tests for request builders
+- Added `set` command for writing TENENT_ID, CLIENT_ID, CLIENT_SECRET vars to config file
+- Added `ctx` param to `NewClient`
+
+[Unreleased]: https://github.com/alamo-ds/msgraph/compare/1bfc98e...HEAD

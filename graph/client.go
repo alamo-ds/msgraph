@@ -4,45 +4,59 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
 	"log"
 	"net/http"
 	"net/url"
 	"sync"
-	"time"
 
-	"github.com/alamo-ds/msgraph/auth"
 	"github.com/alamo-ds/msgraph/env"
 	"github.com/s-hammon/p"
-	"golang.org/x/oauth2"
+	"golang.org/x/oauth2/clientcredentials"
+	"golang.org/x/time/rate"
 )
 
 const (
-	DefaultBaseURL        = "https://graph.microsoft.com/v1.0"
-	DefaultTimeoutSeconds = 5
+	DefaultBaseURL = "https://graph.microsoft.com/v1.0"
+	DefaultAuthURL = "https://login.microsoftonline.com/"
+	DefaultScopes  = "https://graph.microsoft.com/.default"
+
+	DefaultTimeoutSeconds         = 5
+	DefaultRequestsPerSecondLimit = 100
+	DefaultBurst                  = DefaultRequestsPerSecondLimit * 2
 )
 
-type Client struct {
-	BaseURL string
-	c       *http.Client
-	adCfg   auth.AzureADConfig
+type AzureADConfig struct {
+	TenantID     string   `json:"tenant_id"`
+	ClientID     string   `json:"client_id"`
+	ClientSecret string   `json:"client_secret"`
+	Scopes       []string `json:"scopes"`
+}
 
-	tokenCache map[string]*oauth2.Token
-	tokenMu    sync.Mutex
+type Client struct {
+	BaseURL  string
+	TenantID string
+	ClientID string
+	c        *http.Client
+	limiter  *rate.Limiter
 
 	eTagCache map[string]string
-	// NOTE: if we expect the eTag to change for a resource,
-	// NOTE: then this can become just a sync.Mutex.
+	// NOTE: if we expect the eTag to change for a resource, then this can become
+	// just a sync.Mutex.
 	eTagMu sync.RWMutex
 }
 
-func NewClient(azureADCfg ...auth.AzureADConfig) *Client {
-	cfg := env.LoadConfigFile()
+func NewClient(ctx context.Context, azureADCfg ...AzureADConfig) *Client {
+	var cfg AzureADConfig
 	if len(azureADCfg) != 0 {
 		cfg = azureADCfg[0]
-		env.WriteConfigFile(cfg)
+	} else {
+		data := env.LoadConfigFile()
+		json.Unmarshal(data, &cfg)
+	}
+	if len(cfg.Scopes) == 0 {
+		cfg.Scopes = append(cfg.Scopes, DefaultScopes)
 	}
 
 	eTagCache := env.LoadCacheFile().ETags
@@ -51,14 +65,20 @@ func NewClient(azureADCfg ...auth.AzureADConfig) *Client {
 		env.WriteCacheFile("eTag", eTagCache)
 	}
 
+	adCfg := &clientcredentials.Config{
+		ClientID:     cfg.ClientID,
+		ClientSecret: cfg.ClientSecret,
+		TokenURL:     DefaultAuthURL + p.Format("%s/oauth2/v2.0/token", cfg.TenantID),
+		Scopes:       cfg.Scopes,
+	}
+
 	client := &Client{
-		BaseURL: DefaultBaseURL,
-		c: &http.Client{
-			Timeout: DefaultTimeoutSeconds * time.Second,
-		},
-		adCfg:      cfg,
-		tokenCache: make(map[string]*oauth2.Token),
-		eTagCache:  eTagCache,
+		BaseURL:   DefaultBaseURL,
+		TenantID:  cfg.TenantID,
+		ClientID:  cfg.ClientID,
+		c:         adCfg.Client(ctx),
+		limiter:   rate.NewLimiter(rate.Limit(DefaultRequestsPerSecondLimit), DefaultBurst),
+		eTagCache: eTagCache,
 	}
 
 	return client
@@ -68,23 +88,11 @@ func (c *Client) Close() {
 	env.WriteCacheFile("eTags", c.eTagCache)
 }
 
-func (c *Client) cacheKey() string {
-	return p.Format("%s:%s", c.adCfg.TenantID, c.adCfg.ClientID)
-}
-
-func (c *Client) getToken() (*oauth2.Token, bool) {
-	c.tokenMu.Lock()
-	defer c.tokenMu.Unlock()
-
-	token, ok := c.tokenCache[c.cacheKey()]
-	return token, ok
-}
-
-func (c *Client) putToken(token *oauth2.Token) {
-	c.tokenMu.Lock()
-	defer c.tokenMu.Unlock()
-
-	c.tokenCache[c.cacheKey()] = token
+// MaxRequestsPerSecond will also set the burst value to 2x the requests value
+func (c *Client) MaxRequestsPerSecond(requests int) *Client {
+	c.limiter.SetLimit(rate.Limit(requests))
+	c.limiter.SetBurst(requests * 2)
+	return c
 }
 
 func (c *Client) getETag(key string) (string, bool) {
@@ -145,32 +153,20 @@ func (c *Client) refreshETag(ctx context.Context, path string) (string, error) {
 	}
 }
 
-func (c *Client) refreshToken() (*oauth2.Token, error) {
-	resp, err := auth.GetAccessToken(c.adCfg)
-	if err != nil {
-		return nil, err
+func (c *Client) do(req *http.Request) (*http.Response, error) {
+	if err := c.limiter.Wait(req.Context()); err != nil {
+		return nil, fmt.Errorf("limiter.Wait: %v", err)
 	}
-
-	token := &oauth2.Token{
-		AccessToken: resp.Token,
-		TokenType:   resp.TokenType,
-		Expiry:      time.Now().Add(time.Second * time.Duration(resp.ExpiresIn)),
-	}
-	if token.AccessToken == "" {
-		return nil, errors.New("server response missing access_token")
-	}
-
-	c.putToken(token)
-	return token, nil
+	return c.c.Do(req)
 }
 
 func (c *Client) get(ctx context.Context, path string, body io.Reader) (*http.Response, error) {
-	req, err := c.newAuthRequest(ctx, http.MethodGet, path, body)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, path, body)
 	if err != nil {
 		return nil, err
 	}
 
-	resp, err := c.c.Do(req)
+	resp, err := c.do(req)
 	if err != nil {
 		return nil, fmt.Errorf("client.Do: %v", err)
 	}
@@ -190,7 +186,7 @@ func (c *Client) patch(ctx context.Context, path string, body io.Reader) (*http.
 		}
 	}
 
-	req, err := c.newAuthRequest(ctx, http.MethodPatch, path, body)
+	req, err := http.NewRequestWithContext(ctx, http.MethodPatch, path, body)
 	if err != nil {
 		return nil, err
 	}
@@ -199,7 +195,7 @@ func (c *Client) patch(ctx context.Context, path string, body io.Reader) (*http.
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Prefer", "return=representation")
 
-	resp, err := c.c.Do(req)
+	resp, err := c.do(req)
 	if err != nil {
 		return nil, fmt.Errorf("client.Do: %v", err)
 	}
@@ -211,14 +207,14 @@ func (c *Client) patch(ctx context.Context, path string, body io.Reader) (*http.
 }
 
 func (c *Client) post(ctx context.Context, path string, body io.Reader) (*http.Response, error) {
-	req, err := c.newAuthRequest(ctx, http.MethodPost, path, body)
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, path, body)
 	if err != nil {
 		return nil, err
 	}
 
 	req.Header.Set("Content-Type", "application/json")
 
-	resp, err := c.c.Do(req)
+	resp, err := c.do(req)
 	if err != nil {
 		return nil, fmt.Errorf("client.Do: %v", err)
 	}
@@ -227,25 +223,6 @@ func (c *Client) post(ctx context.Context, path string, body io.Reader) (*http.R
 	}
 
 	return resp, nil
-}
-
-func (c *Client) newAuthRequest(ctx context.Context, method, path string, body io.Reader) (*http.Request, error) {
-	token, ok := c.getToken()
-	if !ok || time.Now().After(token.Expiry) {
-		var err error
-		token, err = c.refreshToken()
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	req, err := http.NewRequestWithContext(ctx, method, path, body)
-	if err != nil {
-		return nil, makeReqErr(err)
-	}
-
-	req.Header.Add("Authorization", "Bearer "+token.AccessToken)
-	return req, nil
 }
 
 // Use this only if JoinPath will not throw an error
