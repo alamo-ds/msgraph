@@ -7,10 +7,13 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## Unreleased
 
+## [v0.1.1]
+
 - OAuth2 no uses the golang.org/x/oauth2/clientcredentials scheme
 - Added rate limiting w/ defailts
 - Added tests for request builders
 - Added `set` command for writing TENENT_ID, CLIENT_ID, CLIENT_SECRET vars to config file
 - Added `ctx` param to `NewClient`
 
-[Unreleased]: https://github.com/alamo-ds/msgraph/compare/1bfc98e...HEAD
+[Unreleased]: https://github.com/alamo-ds/msgraph/compare/v0.1.1...HEAD
+[v0.1.1]: https://github.com/alamo-ds/msgraph/releases/tag/v0.1.1
