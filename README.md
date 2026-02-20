@@ -8,6 +8,12 @@ Go library for interacting with the Microsoft Graph API. This project is a work 
 
 ## Overview
 
+To get started, install the latest version of the library:
+
+```bash
+go get -u github.com/alamo-ds/msgraph@latest
+```
+
 Fetch resources through the Microsoft Graph API with the client:
 
 ```go
@@ -25,7 +31,7 @@ aadConfig := graph.AzureADConfig{
 client := graph.NewClient(ctx, aadConfig)
 ```
 
-Alternatively, set values for your tenant ID and client ID/secret with the command-line utility
+Alternatively, set values for your tenant ID and client ID/secret with the command-line utility:
 
 ```bash
 msgraph set \
@@ -42,7 +48,7 @@ This will create a file at `$HOME/.msgraph/config.json`, simplifying the client 
 client := graph.NewClient(ctx) // no config object necessary!
 ```
 
-Refer to resoruces for the full list of supported endpoints.
+Refer to the [CLI](#cli) section for more details.
 
 ## Endpoints
 
@@ -211,3 +217,35 @@ if err != nil {
     ...
 }
 ```
+
+## CLI
+
+### Installation
+
+This section will cover how to install the CLI utility. Pre-compiled binaries are also available in [Releases](https://github.com/alamo-ds/msgraph/releases)
+
+**Go**
+
+```bash
+go install github.com/alamo-ds/msgraph/cmd/msgraph@latest
+```
+
+This installs the `msgraph` binary to `$GOPATH/bin`
+
+**Linux**
+
+```bash
+curl -fsSL \
+	https://raw.githubusercontent.com/alamo-ds/msgraph/main/install.sh |\
+	sh
+```
+
+Note: you may need to run the above script with elevated privileges.
+
+**Windows**
+
+Download the .exe binary from the [latest release](https://github.com/alamo-ds/msgraph/releases/latest).
+
+### Usage
+
+_coming soon..._
