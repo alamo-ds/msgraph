@@ -1,8 +1,10 @@
 # msgraph
 
-**(WIP)**
+[![license](https://img.shields.io/github/license/alamo-ds/msgraph)](https://github.com/alamo-ds/msgraph/blob/master/LICENSE)
+[![CI](https://github.com/alamo-ds/msgraph/actions/workflows/ci.yaml/badge.svg)](https://github.com/alamo-ds/msgraph/actions/workflows/ci.yaml)
+[![Go Report Card](https://goreportcard.com/badge/github.com/alamo-ds/msgraph)](https://goreportcard.com/report/github.com/alamo-ds/msgraph)
 
-Go library for interacting with the Microsoft Graph API.
+Go library for interacting with the Microsoft Graph API. This project is a work in progress; support for more endpoints will be added over time.
 
 ## Overview
 
@@ -11,20 +13,19 @@ Fetch resources through the Microsoft Graph API with the client:
 ```go
 import (
     "os"
-    "github.com/ads/msgraph/auth"
     "github.com/ads/msgraph/graph"
 )
 
-aadConfig := auth.AzureADConfig{
+aadConfig := graph.AzureADConfig{
     TenantID: os.Getenv("TENANT_ID"),
     ClientID: os.Getenv("CLIENT_ID"),
     ClientSecret: os.Getenv("CLIENT_SECRET"),
 }
 
-client := graph.NewClient(aadConfig)
+client := graph.NewClient(ctx, aadConfig)
 ```
 
-_Coming soon: set values for your tenant ID and client ID/secret with the command-line utility_
+Alternatively, set values for your tenant ID and client ID/secret with the command-line utility
 
 ```bash
 msgraph set \
@@ -33,10 +34,12 @@ msgraph set \
     --secret <CLIENT_SECRET> \
 ```
 
+With `TENANT_ID`, `CLIENT_ID`, and `CLIENT_SECRET` environment variables set, you can simply run `msgraph set`.
+
 This will create a file at `$HOME/.msgraph/config.json`, simplifying the client creation:
 
 ```go
-client := graph.NewClient() // no config object necessary!
+client := graph.NewClient(ctx) // no config object necessary!
 ```
 
 Refer to resoruces for the full list of supported endpoints.
