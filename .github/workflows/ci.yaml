@@ -33,6 +33,4 @@ jobs:
             exit 1
           fi
       - name: Test with Go
-        run: go test -json ./.. > TestResults-stable.json
-      - name: Upload Go test results
-        uses: actions/upload-artifact@v6
+        run: go test ./..
