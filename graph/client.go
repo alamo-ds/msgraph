@@ -28,10 +28,10 @@ const (
 )
 
 type AzureADConfig struct {
-	TenantID     string   `json:"tenant_id"`
-	ClientID     string   `json:"client_id"`
-	ClientSecret string   `json:"client_secret"`
-	Scopes       []string `json:"scopes"`
+	TenantID     string
+	ClientID     string
+	ClientSecret string `json:"-"`
+	Scopes       []string
 }
 
 type Client struct {
@@ -157,6 +157,7 @@ func (c *Client) do(req *http.Request) (*http.Response, error) {
 	if err := c.limiter.Wait(req.Context()); err != nil {
 		return nil, fmt.Errorf("limiter.Wait: %v", err)
 	}
+	// #nosec G704 -- path is internally constructed
 	return c.c.Do(req)
 }
 
