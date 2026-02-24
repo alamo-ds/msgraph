@@ -2,10 +2,12 @@ package graph
 
 import (
 	"context"
+	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
+	"github.com/stretchr/testify/require"
 	"golang.org/x/time/rate"
 )
 
@@ -16,14 +18,10 @@ func TestClientGet(t *testing.T) {
 	client := newClient(server)
 
 	resp, err := client.get(context.Background(), server.URL+"/test", nil)
-	if err != nil {
-		t.Fatalf("Expected no error, got %v", err)
-	}
+	require.NoError(t, err)
 	defer resp.Body.Close()
 
-	if resp.StatusCode != http.StatusOK {
-		t.Errorf("Expected status 200, got %d", resp.StatusCode)
-	}
+	require.Equal(t, http.StatusOK, resp.StatusCode)
 }
 
 func TestClientPost(t *testing.T) {
@@ -33,14 +31,10 @@ func TestClientPost(t *testing.T) {
 	client := newClient(server)
 
 	resp, err := client.post(context.Background(), server.URL+"/test", nil)
-	if err != nil {
-		t.Fatalf("Expected no error, got %v", err)
-	}
+	require.NoError(t, err)
 	defer resp.Body.Close()
 
-	if resp.StatusCode != http.StatusCreated {
-		t.Errorf("Expected status 201, got %d", resp.StatusCode)
-	}
+	require.Equal(t, http.StatusCreated, resp.StatusCode)
 }
 
 func TestClientPatch(t *testing.T) {
@@ -51,15 +45,10 @@ func TestClientPatch(t *testing.T) {
 			w.Write([]byte(`{"@odata.etag":"W/\"test-etag\""}`))
 			return
 		}
-		if r.Method != http.MethodPatch {
-			t.Errorf("Expected PATCH request, got %s", r.Method)
-		}
-		if r.URL.Path != "/test" {
-			t.Errorf("Expected path /test, got %s", r.URL.Path)
-		}
-		if r.Header.Get("If-Match") != "W/\"test-etag\"" {
-			t.Errorf("Expected If-Match header W/\"test-etag\", got %s", r.Header.Get("If-Match"))
-		}
+		require.Equal(t, http.MethodPatch, r.Method)
+		require.Equal(t, "/test", r.URL.Path)
+		require.Equal(t, "W/\"test-etag\"", r.Header.Get("If-Match"))
+
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte(`{"key":"value"}`))
 	}))
@@ -73,14 +62,10 @@ func TestClientPatch(t *testing.T) {
 	}
 
 	resp, err := client.patch(context.Background(), server.URL+"/test", nil)
-	if err != nil {
-		t.Fatalf("Expected no error, got %v", err)
-	}
+	require.NoError(t, err)
 	defer resp.Body.Close()
 
-	if resp.StatusCode != http.StatusOK {
-		t.Errorf("Expected status 200, got %d", resp.StatusCode)
-	}
+	require.Equal(t, http.StatusOK, resp.StatusCode)
 }
 
 func TestRefreshETag(t *testing.T) {
@@ -98,18 +83,12 @@ func TestRefreshETag(t *testing.T) {
 	}
 
 	etag, err := client.refreshETag(context.Background(), server.URL+"/test")
-	if err != nil {
-		t.Fatalf("Expected no error, got %v", err)
-	}
-
-	if etag != "W/\"new-etag\"" {
-		t.Errorf("Expected etag W/\"new-etag\", got %s", etag)
-	}
+	require.NoError(t, err)
+	require.Equal(t, "W/\"new-etag\"", etag)
 
 	cachedEtag, ok := client.getETag(server.URL + "/test")
-	if !ok || cachedEtag != "W/\"new-etag\"" {
-		t.Errorf("Expected cached etag W/\"new-etag\", got %s", cachedEtag)
-	}
+	require.True(t, ok)
+	require.True(t, cachedEtag == "W/\"new-etag\"")
 }
 
 func TestNewClientAndClose(t *testing.T) {
@@ -120,24 +99,28 @@ func TestNewClientAndClose(t *testing.T) {
 		ClientSecret: "test-secret",
 	}
 	client := NewClient(context.Background(), cfg)
-	if client.TenantID != "test-tenant" {
-		t.Errorf("Expected tenant ID test-tenant, got %s", client.TenantID)
-	}
-	if client.ClientID != "test-client" {
-		t.Errorf("Expected client ID test-client, got %s", client.ClientID)
-	}
-	if client.BaseURL != DefaultBaseURL {
-		t.Errorf("Expected base URL %s, got %s", DefaultBaseURL, client.BaseURL)
-	}
+	require.Equal(t, "test-tenant", client.TenantID)
+	require.Equal(t, "test-client", client.ClientID)
+	require.Equal(t, DefaultBaseURL, client.BaseURL)
 
 	client.MaxRequestsPerSecond(50)
-	if client.limiter.Limit() != rate.Limit(50) {
-		t.Errorf("Expected limit 50, got %v", client.limiter.Limit())
-	}
-	if client.limiter.Burst() != 100 {
-		t.Errorf("Expected burst 100, got %v", client.limiter.Burst())
-	}
+	require.Equal(t, rate.Limit(50), client.limiter.Limit())
+	require.Equal(t, 100, client.limiter.Burst())
 
 	// Test Close (should write cache file)
 	client.Close()
+}
+
+func TestMarshalAADConfig(t *testing.T) {
+	// NOTE: this tests to make sure the secret isn't serialized (see CWE-499)
+	cfg := AzureADConfig{
+		TenantID:     "test-tenant",
+		ClientID:     "test-client",
+		ClientSecret: "supersecret",
+	}
+
+	b, _ := json.Marshal(cfg)
+	ret := AzureADConfig{}
+	require.NoError(t, json.Unmarshal(b, &ret))
+	require.Equal(t, ret.ClientSecret, "")
 }

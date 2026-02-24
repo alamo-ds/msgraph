@@ -55,3 +55,31 @@ func (r *GroupItemRequestBuilder) Get(ctx context.Context) (Group, error) {
 
 	return ret, nil
 }
+
+type ThreadsRequestBuilder struct {
+	GroupId string
+	c       *Client
+	path    string
+}
+
+func (r *GroupItemRequestBuilder) Threads() *ThreadsRequestBuilder {
+	return &ThreadsRequestBuilder{
+		GroupId: r.Id,
+		c:       r.c,
+		path:    joinPath(r.path, "threads"),
+	}
+}
+
+type GetResponse struct {
+	Value []Conversation `json:"value"`
+}
+
+func (r *ThreadsRequestBuilder) Get(ctx context.Context) ([]Conversation, error) {
+	var ret GetResponse
+
+	if err := get(ctx, r.c, r.path, &ret); err != nil {
+		return nil, err
+	}
+
+	return ret.Value, nil
+}

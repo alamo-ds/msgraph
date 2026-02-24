@@ -17,7 +17,8 @@ var groupsCmd = &cobra.Command{
 }
 
 var (
-	groupId string
+	groupId    string
+	getThreads bool
 )
 
 func init() {
@@ -26,6 +27,7 @@ func init() {
 	groupsCmd.AddCommand(groupsGetCmd)
 
 	groupsGetCmd.Flags().StringVar(&groupId, "id", "", "Microsoft Group ID")
+	groupsGetCmd.Flags().BoolVar(&getThreads, "threads", false, "get threads associated with the group ID")
 }
 
 var groupsGetCmd = &cobra.Command{
@@ -39,6 +41,9 @@ var groupsGetCmd = &cobra.Command{
 		default:
 			return handleGetGroups(ctx, out)
 		case groupId != "":
+			if getThreads {
+				return handleGetGroupThreads(ctx, out)
+			}
 			return handleGetGroupbyId(ctx, out)
 		}
 	},
@@ -61,5 +66,15 @@ func handleGetGroups(ctx context.Context, w io.Writer) error {
 	}
 
 	jsonPrint(w, groups)
+	return nil
+}
+
+func handleGetGroupThreads(ctx context.Context, w io.Writer) error {
+	threads, err := client.Groups().ById(groupId).Threads().Get(ctx)
+	if err != nil {
+		return err
+	}
+
+	jsonPrint(w, threads)
 	return nil
 }
