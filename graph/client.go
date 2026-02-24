@@ -28,10 +28,25 @@ const (
 )
 
 type AzureADConfig struct {
-	TenantID     string
-	ClientID     string
-	ClientSecret string `json:"-"`
+	TenantID string
+	ClientID string
+	// NOTE: will be deserialized from config.json, but not serialized
+	ClientSecret string //#nosec G117
 	Scopes       []string
+}
+
+func (cfg AzureADConfig) MarshalJSON() ([]byte, error) {
+	type alias struct {
+		TenantID string
+		ClientID string
+		Scopes   []string
+	}
+
+	return json.Marshal(alias{
+		TenantID: cfg.TenantID,
+		ClientID: cfg.ClientID,
+		Scopes:   cfg.Scopes,
+	})
 }
 
 type Client struct {

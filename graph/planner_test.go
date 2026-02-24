@@ -6,6 +6,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/stretchr/testify/require"
 	"golang.org/x/time/rate"
 )
 
@@ -16,16 +17,9 @@ func TestPlannerPlansGet(t *testing.T) {
 	client := newClient(server)
 
 	plans, err := client.Groups().ById("group1").Plans().Get(context.Background())
-	if err != nil {
-		t.Fatalf("Expected no error, got %v", err)
-	}
-
-	if len(plans) != 1 {
-		t.Fatalf("Expected 1 plan, got %d", len(plans))
-	}
-	if plans[0].ID != "plan1" {
-		t.Errorf("Expected plan ID plan1, got %s", plans[0].ID)
-	}
+	require.NoError(t, err)
+	require.Len(t, plans, 1)
+	require.Equal(t, "plan1", plans[0].ID)
 }
 
 func TestPlanByIdGet(t *testing.T) {
@@ -35,13 +29,8 @@ func TestPlanByIdGet(t *testing.T) {
 	client := newClient(server)
 
 	plan, err := client.Planner().ById("plan1").Get(context.Background())
-	if err != nil {
-		t.Fatalf("Expected no error, got %v", err)
-	}
-
-	if plan.ID != "plan1" {
-		t.Errorf("Expected plan ID plan1, got %s", plan.ID)
-	}
+	require.NoError(t, err)
+	require.Equal(t, "plan1", plan.ID)
 }
 
 func TestPlanPatch(t *testing.T) {
@@ -54,13 +43,8 @@ func TestPlanPatch(t *testing.T) {
 	}
 
 	plan, err := client.Planner().ById("plan1").Patch(context.Background(), PatchPlanParams{Title: "Updated Plan 1"})
-	if err != nil {
-		t.Fatalf("Expected no error, got %v", err)
-	}
-
-	if plan.Title != "Updated Plan 1" {
-		t.Errorf("Expected plan title Updated Plan 1, got %s", plan.Title)
-	}
+	require.NoError(t, err)
+	require.Equal(t, "Updated Plan 1", plan.Title)
 }
 
 func TestTasksGet(t *testing.T) {
@@ -70,16 +54,9 @@ func TestTasksGet(t *testing.T) {
 	client := newClient(server)
 
 	tasks, err := client.Planner().ById("plan1").Tasks().Get(context.Background())
-	if err != nil {
-		t.Fatalf("Expected no error, got %v", err)
-	}
-
-	if len(tasks) != 1 {
-		t.Fatalf("Expected 1 task, got %d", len(tasks))
-	}
-	if tasks[0].ID != "task1" {
-		t.Errorf("Expected task ID task1, got %s", tasks[0].ID)
-	}
+	require.NoError(t, err)
+	require.Len(t, tasks, 1)
+	require.Equal(t, "task1", tasks[0].ID)
 }
 
 func TestTaskByIdGet(t *testing.T) {
@@ -89,13 +66,8 @@ func TestTaskByIdGet(t *testing.T) {
 	client := newClient(server)
 
 	task, err := client.Planner().Tasks().ById("task1").Get(context.Background())
-	if err != nil {
-		t.Fatalf("Expected no error, got %v", err)
-	}
-
-	if task.ID != "task1" {
-		t.Errorf("Expected task ID task1, got %s", task.ID)
-	}
+	require.NoError(t, err)
+	require.Equal(t, "task1", task.ID)
 }
 
 func TestTaskPatch(t *testing.T) {
@@ -108,13 +80,8 @@ func TestTaskPatch(t *testing.T) {
 	}
 
 	task, err := client.Planner().Tasks().ById("task1").Patch(context.Background(), PatchTaskParams{Title: "Updated Task 1"})
-	if err != nil {
-		t.Fatalf("Expected no error, got %v", err)
-	}
-
-	if task.Title != "Updated Task 1" {
-		t.Errorf("Expected task title Updated Task 1, got %s", task.Title)
-	}
+	require.NoError(t, err)
+	require.Equal(t, "Updated Task 1", task.Title)
 }
 
 func TestTaskPost(t *testing.T) {
@@ -124,13 +91,8 @@ func TestTaskPost(t *testing.T) {
 	client := newClient(server)
 
 	task, err := client.Planner().Tasks().Post(context.Background(), PostTaskParams{Title: "New Task 1", PlanID: "plan1"})
-	if err != nil {
-		t.Fatalf("Expected no error, got %v", err)
-	}
-
-	if task.Title != "New Task 1" {
-		t.Errorf("Expected task title New Task 1, got %s", task.Title)
-	}
+	require.NoError(t, err)
+	require.Equal(t, "New Task 1", task.Title)
 }
 
 func TestBucketsGet(t *testing.T) {
@@ -140,16 +102,9 @@ func TestBucketsGet(t *testing.T) {
 	client := newClient(server)
 
 	buckets, err := client.Planner().ById("plan1").Buckets().Get(context.Background())
-	if err != nil {
-		t.Fatalf("Expected no error, got %v", err)
-	}
-
-	if len(buckets) != 1 {
-		t.Fatalf("Expected 1 bucket, got %d", len(buckets))
-	}
-	if buckets[0].ID != "bucket1" {
-		t.Errorf("Expected bucket ID bucket1, got %s", buckets[0].ID)
-	}
+	require.NoError(t, err)
+	require.Len(t, buckets, 1)
+	require.Equal(t, "bucket1", buckets[0].ID)
 }
 
 func TestBucketPatch(t *testing.T) {
@@ -162,13 +117,8 @@ func TestBucketPatch(t *testing.T) {
 	}
 
 	bucket, err := client.Planner().Buckets().ById("bucket1").Patch(context.Background(), PatchBucketParams{Name: "Updated Bucket 1"})
-	if err != nil {
-		t.Fatalf("Expected no error, got %v", err)
-	}
-
-	if bucket.Name != "Updated Bucket 1" {
-		t.Errorf("Expected bucket name Updated Bucket 1, got %s", bucket.Name)
-	}
+	require.NoError(t, err)
+	require.Equal(t, "Updated Bucket 1", bucket.Name)
 }
 
 func TestBucketPost(t *testing.T) {
@@ -178,13 +128,8 @@ func TestBucketPost(t *testing.T) {
 	client := newClient(server)
 
 	bucket, err := client.Planner().Buckets().Post(context.Background(), PostBucketParams{Name: "New Bucket 1", PlanID: "plan1"})
-	if err != nil {
-		t.Fatalf("Expected no error, got %v", err)
-	}
-
-	if bucket.Name != "New Bucket 1" {
-		t.Errorf("Expected bucket name New Bucket 1, got %s", bucket.Name)
-	}
+	require.NoError(t, err)
+	require.Equal(t, "New Bucket 1", bucket.Name)
 }
 
 func TestTaskDetailsGet(t *testing.T) {
@@ -194,16 +139,9 @@ func TestTaskDetailsGet(t *testing.T) {
 	client := newClient(server)
 
 	details, err := client.Planner().Tasks().ById("task1").Details().Get(context.Background())
-	if err != nil {
-		t.Fatalf("Expected no error, got %v", err)
-	}
-
-	if details.ID != "task1" {
-		t.Errorf("Expected task details ID task1, got %s", details.ID)
-	}
-	if details.Description != "Task 1 Description" {
-		t.Errorf("Expected task description Task 1 Description, got %s", details.Description)
-	}
+	require.NoError(t, err)
+	require.Equal(t, "task1", details.ID)
+	require.Equal(t, "Task 1 Description", details.Description)
 }
 
 func TestPlannerGet(t *testing.T) {
@@ -213,26 +151,15 @@ func TestPlannerGet(t *testing.T) {
 	client := newClient(server)
 
 	plans, err := client.Planner().Get(context.Background())
-	if err != nil {
-		t.Fatalf("Expected no error, got %v", err)
-	}
-
-	if len(plans) != 1 {
-		t.Fatalf("Expected 1 plan, got %d", len(plans))
-	}
-	if plans[0].ID != "plan1" {
-		t.Errorf("Expected plan ID plan1, got %s", plans[0].ID)
-	}
+	require.NoError(t, err)
+	require.Len(t, plans, 1)
+	require.Equal(t, "plan1", plans[0].ID)
 }
 
 func newTestServer(t *testing.T, code, path, data string) *httptest.Server {
 	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.Method != code {
-			t.Errorf("Expected %s, got %s", code, r.Method)
-		}
-		if r.URL.Path != path {
-			t.Errorf("Expected %s, got %s", path, r.URL.Path)
-		}
+		require.Equal(t, code, r.Method)
+		require.Equal(t, path, r.URL.Path)
 
 		switch code {
 		case http.MethodGet, http.MethodPatch:
