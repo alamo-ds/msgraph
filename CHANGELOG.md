@@ -7,6 +7,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [v0.1.2]
+
 - Post type with RawBody method
 - Get group threads & posts client methods
 - Threads flag to `groups` CLI command, and `posts` command
@@ -21,4 +23,5 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Added `ctx` param to `NewClient`
 
 [Unreleased]: https://github.com/alamo-ds/msgraph/compare/v0.1.1...HEAD
-[v0.1.1]: https://github.com/alamo-ds/msgraph/releases/tag/v0.1.1
+[v0.1.1]: https://github.com/alamo-ds/msgraph/releases/tag/v0.1.1...v0.1.2
+[v0.1.2]: https://github.com/alamo-ds/msgraph/releases/tag/v0.1.1
