@@ -7,6 +7,10 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+- Bump golang.org/x/net from 0.44.0 to 0.51.0 in the gomod group
+- Updated golang.org/x/net to 0.51.0
+- removed secret field from Azure AD config struct. Use CLIENT_SECRET env var instead.
+
 ## [v0.1.2]
 
 - Post type with RawBody method
