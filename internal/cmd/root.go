@@ -31,7 +31,7 @@ func Execute(args []string, in io.Reader, out, err io.Writer) int {
 
 // TODO: do real pre-run checks
 func clientPreRun(cmd *cobra.Command, args []string) error {
-	client = graph.NewClient(cmd.Context())
+	client = graph.NewClient(cmd.Context(), clientSecret)
 	return nil
 }
 

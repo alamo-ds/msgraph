@@ -12,7 +12,7 @@ import (
 
 var setCmd = &cobra.Command{
 	Use:   "set",
-	Short: "set tenant ID and client ID/secret from env or manual entry",
+	Short: "set tenant ID and client ID from env or manual entry",
 	Args:  cobra.NoArgs,
 	PreRunE: func(cmd *cobra.Command, args []string) error {
 		var err error
@@ -29,13 +29,12 @@ var setCmd = &cobra.Command{
 	},
 	Run: func(cmd *cobra.Command, args []string) {
 		cfg := graph.AzureADConfig{
-			TenantID:     tenantId,
-			ClientID:     clientId,
-			ClientSecret: clientSecret,
-			Scopes:       []string{graph.DefaultScopes},
+			TenantID: tenantId,
+			ClientID: clientId,
+			Scopes:   []string{graph.DefaultScopes},
 		}
 
-		data, _ := json.MarshalIndent(cfg, "", "  ")
+		data, _ := json.MarshalIndent(cfg, "", "  ") //#nosec G117
 		env.WriteConfigFile(data)
 		fmt.Fprintf(cmd.OutOrStdout(), "config for tenant ID %s stored successfully\n", tenantId)
 	},

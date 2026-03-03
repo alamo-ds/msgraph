@@ -2,7 +2,6 @@ package graph
 
 import (
 	"context"
-	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -94,11 +93,10 @@ func TestRefreshETag(t *testing.T) {
 func TestNewClientAndClose(t *testing.T) {
 	// Test with provided config
 	cfg := AzureADConfig{
-		TenantID:     "test-tenant",
-		ClientID:     "test-client",
-		ClientSecret: "test-secret",
+		TenantID: "test-tenant",
+		ClientID: "test-client",
 	}
-	client := NewClient(context.Background(), cfg)
+	client := NewClient(context.Background(), "test-secret", cfg)
 	require.Equal(t, "test-tenant", client.TenantID)
 	require.Equal(t, "test-client", client.ClientID)
 	require.Equal(t, DefaultBaseURL, client.BaseURL)
@@ -109,18 +107,4 @@ func TestNewClientAndClose(t *testing.T) {
 
 	// Test Close (should write cache file)
 	client.Close()
-}
-
-func TestMarshalAADConfig(t *testing.T) {
-	// NOTE: this tests to make sure the secret isn't serialized (see CWE-499)
-	cfg := AzureADConfig{
-		TenantID:     "test-tenant",
-		ClientID:     "test-client",
-		ClientSecret: "supersecret",
-	}
-
-	b, _ := json.Marshal(cfg)
-	ret := AzureADConfig{}
-	require.NoError(t, json.Unmarshal(b, &ret))
-	require.Equal(t, ret.ClientSecret, "")
 }
