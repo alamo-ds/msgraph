@@ -31,16 +31,15 @@ aadConfig := graph.AzureADConfig{
 client := graph.NewClient(ctx, aadConfig)
 ```
 
-Alternatively, set values for your tenant ID and client ID/secret with the command-line utility:
+Alternatively, set values for your tenant ID and client ID with the command-line utility:
 
 ```bash
 msgraph set \
     --tenant-id <TENANT_ID> \
-    --client-id <CLIENT_ID> \
-    --secret <CLIENT_SECRET> \
+    --client-id <CLIENT_ID>
 ```
 
-With `TENANT_ID`, `CLIENT_ID`, and `CLIENT_SECRET` environment variables set, you can simply run `msgraph set`.
+With `TENANT_ID` and `CLIENT_ID` environment variables set, you can simply run `msgraph set`. Note that you still need to supply `CLIENT_SECRET` as an environment variable.
 
 This will create a file at `$HOME/.msgraph/config.json`, simplifying the client creation:
 

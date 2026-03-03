@@ -30,23 +30,7 @@ const (
 type AzureADConfig struct {
 	TenantID string
 	ClientID string
-	// NOTE: will be deserialized from config.json, but not serialized
-	ClientSecret string //#nosec G117
-	Scopes       []string
-}
-
-func (cfg AzureADConfig) MarshalJSON() ([]byte, error) {
-	type alias struct {
-		TenantID string
-		ClientID string
-		Scopes   []string
-	}
-
-	return json.Marshal(alias{
-		TenantID: cfg.TenantID,
-		ClientID: cfg.ClientID,
-		Scopes:   cfg.Scopes,
-	})
+	Scopes   []string
 }
 
 type Client struct {
@@ -62,7 +46,7 @@ type Client struct {
 	eTagMu sync.RWMutex
 }
 
-func NewClient(ctx context.Context, azureADCfg ...AzureADConfig) *Client {
+func NewClient(ctx context.Context, clientSecret string, azureADCfg ...AzureADConfig) *Client {
 	var cfg AzureADConfig
 	if len(azureADCfg) != 0 {
 		cfg = azureADCfg[0]
@@ -82,7 +66,7 @@ func NewClient(ctx context.Context, azureADCfg ...AzureADConfig) *Client {
 
 	adCfg := &clientcredentials.Config{
 		ClientID:     cfg.ClientID,
-		ClientSecret: cfg.ClientSecret,
+		ClientSecret: clientSecret,
 		TokenURL:     DefaultAuthURL + p.Format("%s/oauth2/v2.0/token", cfg.TenantID),
 		Scopes:       cfg.Scopes,
 	}
