@@ -8,20 +8,20 @@ import (
 )
 
 type Post struct {
-	OdataEtag            string      `json:"@odata.etag"`
-	ID                   string      `json:"id"`
-	ChangeKey            string      `json:"changeKey"`
-	ConversationID       string      `json:"conversationId"`
-	ConversationThreadID string      `json:"conversationThreadId"`
-	HasAttachments       bool        `json:"hasAttachments"`
-	Categories           []string    `json:"categories"`
-	CreatedDateTime      time.Time   `json:"createdDateTime"`
-	LastModifiedDateTime time.Time   `json:"lastModifiedDateTime"`
-	ReceivedDateTime     time.Time   `json:"receivedDateTime"`
-	From                 Recipient   `json:"from"`
-	Sender               Recipient   `json:"sender"`
-	Body                 ItemBody    `json:"body"`
-	NewParticipants      []Recipient `json:"newParticipants"`
+	OdataEtag            string      `json:"@odata.etag,omitempty"`
+	ID                   string      `json:"id,omitempty"`
+	ChangeKey            string      `json:"changeKey,omitempty"`
+	ConversationID       string      `json:"conversationId,omitempty"`
+	ConversationThreadID string      `json:"conversationThreadId,omitempty"`
+	HasAttachments       bool        `json:"hasAttachments,omitempty"`
+	Categories           []string    `json:"categories,omitempty"`
+	CreatedDateTime      time.Time   `json:"createdDateTime,omitzero"`
+	LastModifiedDateTime time.Time   `json:"lastModifiedDateTime,omitzero"`
+	ReceivedDateTime     time.Time   `json:"receivedDateTime,omitzero"`
+	From                 Recipient   `json:"from,omitzero"`
+	Sender               Recipient   `json:"sender,omitzero"`
+	Body                 ItemBody    `json:"body,omitzero"`
+	NewParticipants      []Recipient `json:"newParticipants,omitzero"`
 }
 
 // sexy wolf growl

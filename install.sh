@@ -7,7 +7,7 @@ set -e
 os=$(uname -s | tr '[:upper:]' '[:lower:]')
 arch=$(uname -m)
 
-if [ "$arch" == "aarch64" ]; then
+if [ "$arch" = "aarch64" ]; then
     arch="arm64"
 fi
 
