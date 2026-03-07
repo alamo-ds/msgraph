@@ -7,7 +7,7 @@ updates:
       interval: weekly
       day: saturday
     assignees:
-      - shammon
+      - s-hammon
 
   - package-ecosystem: gomod
     directory: /
@@ -19,7 +19,7 @@ updates:
         patterns:
           - "*"
     assignees:
-      - shammon
+      - s-hammon
     ignore:
       - dependency-name: "*"
         update-types: ["version-update:semver-patch"]
