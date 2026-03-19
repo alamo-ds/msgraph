@@ -3,6 +3,7 @@ package cmd
 import (
 	"context"
 	"io"
+	"os"
 	"os/exec"
 
 	"github.com/alamo-ds/msgraph/graph"
@@ -15,6 +16,12 @@ var rootCmd = &cobra.Command{
 	PersistentPreRunE:  clientPreRun,
 	PersistentPostRunE: clientPostRun,
 }
+
+var (
+	tenantId     string
+	clientId     string
+	clientSecret string
+)
 
 func Execute(args []string, in io.Reader, out, err io.Writer) int {
 	ctx := context.Background()
@@ -31,6 +38,10 @@ func Execute(args []string, in io.Reader, out, err io.Writer) int {
 
 // TODO: do real pre-run checks
 func clientPreRun(cmd *cobra.Command, args []string) error {
+	tenantId = os.Getenv("TENANT_ID")
+	clientId = os.Getenv("CLIENT_ID")
+	clientSecret = os.Getenv("CLIENT_SECRET")
+
 	client = graph.NewClient(cmd.Context(), clientSecret)
 	return nil
 }

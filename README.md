@@ -25,7 +25,6 @@ import (
 aadConfig := graph.AzureADConfig{
     TenantID: os.Getenv("TENANT_ID"),
     ClientID: os.Getenv("CLIENT_ID"),
-    ClientSecret: os.Getenv("CLIENT_SECRET"),
 }
 
 client := graph.NewClient(ctx, aadConfig)

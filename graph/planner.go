@@ -12,6 +12,8 @@ import (
 const (
 	plannerResource string = "planner"
 	plansResource   string = "plans"
+	tasksResource   string = "tasks"
+	bucketsResource string = "buckets"
 )
 
 type PlannerRequestBuilder struct {
@@ -43,7 +45,7 @@ func (r *PlannerRequestBuilder) ById(id string) *PlanRequestBuilder {
 	return &PlanRequestBuilder{
 		Id:   id,
 		c:    r.c,
-		path: joinPath(r.path, "plans", id),
+		path: joinPath(r.path, plansResource, id),
 	}
 }
 
@@ -71,7 +73,7 @@ type TasksRequestBuilder struct {
 func (r *PlannerRequestBuilder) Tasks() *TasksRequestBuilder {
 	return &TasksRequestBuilder{
 		c:    r.c,
-		path: joinPath(r.path, "tasks"),
+		path: joinPath(r.path, tasksResource),
 	}
 }
 
@@ -79,7 +81,7 @@ func (r *PlanRequestBuilder) Tasks() *TasksRequestBuilder {
 	return &TasksRequestBuilder{
 		Id:   r.Id,
 		c:    r.c,
-		path: joinPath(r.path, "tasks"),
+		path: joinPath(r.path, tasksResource),
 	}
 }
 
@@ -275,7 +277,7 @@ func (r *PlanRequestBuilder) Buckets() *BucketsRequestBuilder {
 	return &BucketsRequestBuilder{
 		Id:   r.Id,
 		c:    r.c,
-		path: joinPath(r.path, "buckets"),
+		path: joinPath(r.path, bucketsResource),
 	}
 }
 
@@ -303,7 +305,7 @@ type BucketItemRequestBuilder struct {
 func (r *PlannerRequestBuilder) Buckets() *BucketItemRequestBuilder {
 	return &BucketItemRequestBuilder{
 		c:    r.c,
-		path: joinPath(r.path, "buckets"),
+		path: joinPath(r.path, bucketsResource),
 	}
 }
 
