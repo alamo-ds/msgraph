@@ -3,7 +3,6 @@ package cmd
 import (
 	"encoding/json"
 	"fmt"
-	"os"
 
 	"github.com/alamo-ds/msgraph/env"
 	"github.com/alamo-ds/msgraph/graph"
@@ -40,22 +39,11 @@ var setCmd = &cobra.Command{
 	},
 }
 
-var (
-	tenantId     string
-	clientId     string
-	clientSecret string
-)
-
 func init() {
 	rootCmd.AddCommand(setCmd)
 
 	setCmd.Flags().StringVar(&tenantId, "tenant-id", "", "")
 	setCmd.Flags().StringVar(&clientId, "client-id", "", "")
-	setCmd.Flags().StringVar(&clientSecret, "client-secret", "", "")
-
-	tenantId = os.Getenv("TENANT_ID")
-	clientId = os.Getenv("CLIENT_ID")
-	clientSecret = os.Getenv("CLIENT_SECRET")
 }
 
 func flagErr(envVar string) error {
