@@ -7,6 +7,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+- Removed annoying logging when fetching Users :^)
+
 ## [v0.2.1]
 
 - Fixed issue where `--details` flag didn't work with `task get` subcommand.

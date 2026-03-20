@@ -2,7 +2,6 @@ package graph
 
 import (
 	"context"
-	"log"
 )
 
 const usersResource string = "users"
@@ -35,7 +34,6 @@ func (r *UsersRequestBuilder) Get(ctx context.Context) ([]User, error) {
 
 	selectParams := userSelectParams(r.selectParams)
 
-	log.Println(selectParams)
 	if err := get(ctx, r.c, r.path+"?$select"+selectParams, &ret); err != nil {
 		return nil, err
 	}
