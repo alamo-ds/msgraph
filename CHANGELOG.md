@@ -7,12 +7,16 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [v0.2.1]
+
+- Fixed issue where `--details` flag didn't work with `task get` subcommand.
+
 ## [v0.2.0]
 
 - Bump golang.org/x/net from 0.44.0 to 0.51.0 in the gomod group
 - Updated golang.org/x/net to 0.51.0
 - removed secret field from Azure AD config struct. Use CLIENT_SECRET env var instead.
-  * This includes the variable option for `set`
+  - This includes the variable option for `set`
 - Added methods for Client to get User data
 - Added `users` subcommand to CLI utility
 
@@ -31,7 +35,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Added `set` command for writing TENENT_ID, CLIENT_ID, CLIENT_SECRET vars to config file
 - Added `ctx` param to `NewClient`
 
-[Unreleased]: https://github.com/alamo-ds/msgraph/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/alamo-ds/msgraph/compare/v0.2.1...HEAD
 [v0.1.1]: https://github.com/alamo-ds/msgraph/releases/tag/v0.1.1
 [v0.1.2]: https://github.com/alamo-ds/msgraph/releases/tag/v0.1.2
 [v0.2.0]: https://github.com/alamo-ds/msgraph/releases/tag/v0.2.0
+[v0.2.1]: https://github.com/alamo-ds/msgraph/releases/tag/v0.2.1
