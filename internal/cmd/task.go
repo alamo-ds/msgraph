@@ -29,8 +29,8 @@ func init() {
 
 	taskCmd.AddCommand(taskGetCmd)
 	taskGetCmd.PersistentFlags().StringVar(&taskId, "id", "", "ID of the Planner task")
-	taskCmd.Flags().BoolVar(&details, "details", false, "fetch details about the Planner task")
-	taskCmd.MarkPersistentFlagRequired("id")
+	taskGetCmd.Flags().BoolVar(&details, "details", false, "fetch details about the Planner task")
+	taskGetCmd.MarkPersistentFlagRequired("id")
 
 	taskCmd.AddCommand(taskUpdateCmd)
 	taskUpdateCmd.Flags().StringVar(&updateTaskTitle, "title", "", "new title to assign to Planner task")
